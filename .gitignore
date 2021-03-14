@@ -1,0 +1,11 @@
+# Visual Studio Code
+.vscode/
+
+# JetBrains
+.idea/
+
+# Terraform
+/.terraform/
+
+# private SSH key
+edge-modeling.pem
