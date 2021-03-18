@@ -2,6 +2,11 @@ provider "aws" {
   region = "ca-central-1"
 }
 
+variable "availability_zone" {
+  type = string
+  default = "ca-central-1a"
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -67,6 +72,16 @@ resource "aws_internet_gateway" "edge-modeling-gateway" {
   }
 }
 
+resource "aws_subnet" "edge-modeling-public-subnet" {
+  vpc_id = aws_vpc.edge-modeling-vpc.id
+  cidr_block = "172.16.10.0/24"
+  availability_zone = var.availability_zone
+
+  tags = {
+    name = "edge-modeling"
+  }
+}
+
 resource "aws_route_table" "edge-modeling-route-table" {
   vpc_id = aws_vpc.edge-modeling-vpc.id
 
@@ -80,19 +95,55 @@ resource "aws_route_table" "edge-modeling-route-table" {
   }
 }
 
-resource "aws_subnet" "edge-modeling-subnet" {
-  vpc_id = aws_vpc.edge-modeling-vpc.id
-  cidr_block = "172.16.10.0/24"
-  availability_zone = "ca-central-1a"
+resource "aws_route_table_association" "public-route-table-association" {
+  route_table_id = aws_route_table.edge-modeling-route-table.id
+  subnet_id = aws_subnet.edge-modeling-public-subnet.id
+}
+
+resource "aws_eip" "nat" {
+  vpc = true
 
   tags = {
     name = "edge-modeling"
   }
 }
 
-resource "aws_route_table_association" "edge-modeling-association" {
-  route_table_id = aws_route_table.edge-modeling-route-table.id
-  subnet_id = aws_subnet.edge-modeling-subnet.id
+resource "aws_subnet" "edge-modeling-private-subnet" {
+  vpc_id = aws_vpc.edge-modeling-vpc.id
+  cidr_block = "172.16.20.0/24"
+  availability_zone = var.availability_zone
+
+  tags = {
+    name = "edge-modeling"
+  }
+}
+
+resource "aws_nat_gateway" "nat-gw" {
+  allocation_id = aws_eip.nat.id
+  subnet_id = aws_subnet.edge-modeling-public-subnet.id
+  depends_on = [aws_internet_gateway.edge-modeling-gateway]
+
+  tags = {
+    name = "edge-modeling"
+  }
+}
+
+resource "aws_route_table" "private-route-table" {
+  vpc_id = aws_vpc.edge-modeling-vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat-gw.id
+  }
+
+  tags = {
+    name = "edge-modeling"
+  }
+}
+
+resource "aws_route_table_association" "private-route-table-association" {
+  route_table_id = aws_route_table.private-route-table.id
+  subnet_id = aws_subnet.edge-modeling-private-subnet.id
 }
 
 resource "aws_key_pair" "edge-modeling-key-pair" {
@@ -100,13 +151,13 @@ resource "aws_key_pair" "edge-modeling-key-pair" {
   public_key = file("edge-modeling.pub")
 }
 
-resource "aws_instance" "load_balancer" {
+resource "aws_instance" "master" {
   ami = data.aws_ami.ubuntu.id
   instance_type = "t2.small"
   # ToDo: change the instance type
 
   key_name = aws_key_pair.edge-modeling-key-pair.id
-  subnet_id = aws_subnet.edge-modeling-subnet.id
+  subnet_id = aws_subnet.edge-modeling-public-subnet.id
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.edge-modeling-security-group.id]
 }
@@ -118,31 +169,28 @@ resource "aws_instance" "workers" {
   count = 2
 
   key_name = aws_key_pair.edge-modeling-key-pair.id
-  subnet_id = aws_subnet.edge-modeling-subnet.id
+  subnet_id = aws_subnet.edge-modeling-private-subnet.id
   vpc_security_group_ids = [aws_security_group.edge-modeling-security-group.id]
 }
 
 resource "local_file" "ansible-hosts" {
-  content = templatefile("ansible/hosts.tpl",{
-    load-balancer-ip = aws_instance.load_balancer.public_ip,
-    workers-internal-ip = aws_instance.workers.*.private_ip
+  content = templatefile("ansible/inventory/hosts.tpl",{
+    master-public-ip = aws_instance.master.public_ip,
+    master-private-ip = aws_instance.master.private_ip,
+    worker-private-ip = aws_instance.workers.*.private_ip
   })
-  filename = "ansible/hosts.ini"
+  filename = "ansible/inventory/hosts.ini"
   file_permission = "0644"
 }
 
 output "load-balancer-id" {
-  value = aws_instance.load_balancer.id
+  value = aws_instance.master.id
 }
 
 output "load-balancer-ip" {
-  value = aws_instance.load_balancer.public_ip
+  value = aws_instance.master.public_ip
 }
 
 output "workers-id" {
   value = aws_instance.workers.*.id
-}
-
-output "workers-internal-ip" {
-  value = aws_instance.workers.*.private_ip
 }

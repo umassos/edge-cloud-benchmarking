@@ -1,0 +1,2 @@
+---
+k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh

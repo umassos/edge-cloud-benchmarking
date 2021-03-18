@@ -6,6 +6,8 @@
 
 # Terraform
 /.terraform/
+*.tfstate
+*.tfstate.*
 
 # private SSH key
 edge-modeling.pem

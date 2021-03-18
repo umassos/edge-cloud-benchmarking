@@ -1,0 +1,19 @@
+---
+
+- name: Download k3s installer script
+  get_url:
+    url: https://get.k3s.io/
+    dest: /tmp/k3s-installer.sh
+    mode: 0755
+
+- name: Install k3s
+  shell: /tmp/k3s-installer.sh
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    K3S_URL: "https://{{ master_ip }}:6443"
+    K3S_TOKEN: "{{ hostvars[groups['master'][0]]['token'] }}"
+
+- name: Delete k3s installer script
+  file:
+    path: /tmp/k3s-installer.sh
+    state: absent

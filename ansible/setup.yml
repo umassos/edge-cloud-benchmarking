@@ -1,0 +1,13 @@
+---
+
+- hosts: k3s
+  roles:
+    - role: uninstall
+
+- hosts: master
+  roles:
+    - role: master
+
+- hosts: worker
+  roles:
+    - role: worker
