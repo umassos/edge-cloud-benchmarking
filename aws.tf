@@ -64,7 +64,7 @@ resource "aws_security_group" "edge-modeling-security-group" {
   }
 }
 
-resource "aws_internet_gateway" "edge-modeling-gateway" {
+resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = aws_vpc.edge-modeling-vpc.id
 
   tags = {
@@ -72,7 +72,7 @@ resource "aws_internet_gateway" "edge-modeling-gateway" {
   }
 }
 
-resource "aws_subnet" "edge-modeling-public-subnet" {
+resource "aws_subnet" "public-subnet" {
   vpc_id = aws_vpc.edge-modeling-vpc.id
   cidr_block = "172.16.10.0/24"
   availability_zone = var.availability_zone
@@ -87,7 +87,7 @@ resource "aws_route_table" "edge-modeling-route-table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.edge-modeling-gateway.id
+    gateway_id = aws_internet_gateway.internet-gateway.id
   }
 
   tags = {
@@ -97,7 +97,7 @@ resource "aws_route_table" "edge-modeling-route-table" {
 
 resource "aws_route_table_association" "public-route-table-association" {
   route_table_id = aws_route_table.edge-modeling-route-table.id
-  subnet_id = aws_subnet.edge-modeling-public-subnet.id
+  subnet_id = aws_subnet.public-subnet.id
 }
 
 resource "aws_eip" "nat" {
@@ -108,7 +108,7 @@ resource "aws_eip" "nat" {
   }
 }
 
-resource "aws_subnet" "edge-modeling-private-subnet" {
+resource "aws_subnet" "private-subnet" {
   vpc_id = aws_vpc.edge-modeling-vpc.id
   cidr_block = "172.16.20.0/24"
   availability_zone = var.availability_zone
@@ -118,10 +118,10 @@ resource "aws_subnet" "edge-modeling-private-subnet" {
   }
 }
 
-resource "aws_nat_gateway" "nat-gw" {
+resource "aws_nat_gateway" "nat-gateway" {
   allocation_id = aws_eip.nat.id
-  subnet_id = aws_subnet.edge-modeling-public-subnet.id
-  depends_on = [aws_internet_gateway.edge-modeling-gateway]
+  subnet_id = aws_subnet.public-subnet.id
+  depends_on = [aws_internet_gateway.internet-gateway]
 
   tags = {
     name = "edge-modeling"
@@ -133,7 +133,7 @@ resource "aws_route_table" "private-route-table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat-gw.id
+    nat_gateway_id = aws_nat_gateway.nat-gateway.id
   }
 
   tags = {
@@ -143,7 +143,7 @@ resource "aws_route_table" "private-route-table" {
 
 resource "aws_route_table_association" "private-route-table-association" {
   route_table_id = aws_route_table.private-route-table.id
-  subnet_id = aws_subnet.edge-modeling-private-subnet.id
+  subnet_id = aws_subnet.private-subnet.id
 }
 
 resource "aws_key_pair" "edge-modeling-key-pair" {
@@ -157,7 +157,7 @@ resource "aws_instance" "master" {
   # ToDo: change the instance type
 
   key_name = aws_key_pair.edge-modeling-key-pair.id
-  subnet_id = aws_subnet.edge-modeling-public-subnet.id
+  subnet_id = aws_subnet.public-subnet.id
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.edge-modeling-security-group.id]
 }
@@ -169,7 +169,7 @@ resource "aws_instance" "workers" {
   count = 2
 
   key_name = aws_key_pair.edge-modeling-key-pair.id
-  subnet_id = aws_subnet.edge-modeling-private-subnet.id
+  subnet_id = aws_subnet.private-subnet.id
   vpc_security_group_ids = [aws_security_group.edge-modeling-security-group.id]
 }
 
