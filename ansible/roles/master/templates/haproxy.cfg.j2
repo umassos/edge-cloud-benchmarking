@@ -1,0 +1,32 @@
+global
+    maxconn 4096
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    mode http
+    retry-on none  # disable retry to get clean results
+    timeout connect 5s
+    timeout client 50s
+    timeout server 50s
+
+frontend http-in
+    bind *:80
+    acl url_check   path_beg /check
+    acl url_predict path_beg /predict
+    use_backend health-checker  if  METH_GET     url_check
+    use_backend workers         if  METH_POST    url_predict
+    default_backend no-match
+
+backend health-checker
+    server health-checker {{ health_checker_container.NetworkSettings.IPAddress }}:5000 maxconn 8
+
+backend workers
+    balance leastconn
+{% for worker_addr in groups['worker'] %}
+    server worker{{ loop.index }} {{ worker_addr }}:80
+{% endfor %}
+
+backend no-match
+    http-request deny deny_status 400

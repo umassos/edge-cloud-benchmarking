@@ -1,13 +1,13 @@
 ---
 
-- hosts: k3s
+- hosts: cluster
   roles:
-    - role: uninstall
+    - role: install_docker
+
+- hosts: worker
+  roles:
+    - role: run_rest_api
 
 - hosts: master
   roles:
     - role: master
-
-- hosts: worker
-  roles:
-    - role: worker

@@ -1,0 +1,34 @@
+---
+
+- name: Get home directory
+  set_fact:
+    home: /home/ubuntu
+
+- name: Download docker install script
+  get_url:
+    url: https://get.docker.com
+    dest: "{{ home }}/docker-install.sh"
+    mode: 0755
+
+- name: Install docker
+  shell: "{{ home }}/docker-install.sh"
+  args:
+    creates: /usr/bin/docker
+
+- name: Add user to docker group
+  user:
+    name: ubuntu
+    groups: docker
+    append: true
+  become: true
+
+- name: Install pip
+  package:
+    name: python3-pip
+    state: present
+  become: true
+
+- name: Install the python3 docker module
+  pip:
+    name: docker
+    executable: pip3

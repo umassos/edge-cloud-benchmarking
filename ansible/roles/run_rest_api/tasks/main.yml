@@ -1,0 +1,16 @@
+---
+
+- name: Pull image from docker hub
+  docker_image:
+    name: binw/simple-keras-rest-api
+    source: pull
+    force_source: true
+
+- name: Run rest api container
+  docker_container:
+    name: simple-keras-rest-api
+    image: binw/simple-keras-rest-api
+    container_default_behavior: compatibility
+    detach: true
+    published_ports:
+      - 80:5000

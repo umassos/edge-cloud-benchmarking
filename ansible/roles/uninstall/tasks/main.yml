@@ -1,6 +1,0 @@
----
-
-- name: Uninstall k3s
-  shell: "{{ k3s_uninstall_script }}"
-  args:
-    removes: /usr/local/bin/k3s

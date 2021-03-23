@@ -1,31 +1,64 @@
 ---
 
-- name: Download k3s installer script
-  get_url:
-    url: https://get.k3s.io/
-    dest: /tmp/k3s-installer.sh
-    mode: 0755
-
-- name: Install k3s
-  shell: /tmp/k3s-installer.sh
-  environment:
-    K3S_KUBECONFIG_MODE: 644
-    INSTALL_K3S_VERSION: "{{ k3s_version }}"
-
-- name: Delete k3s installer script
-  file:
-    path: /tmp/k3s-installer.sh
-    state: absent
-
-- name: Read node token
-  slurp:
-    src: /var/lib/rancher/k3s/server/node-token
-  register: node_token
-  become: true
-
-- name: Store Master node-token
+- name: Get home directory
   set_fact:
-    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+    home: /home/ubuntu
 
-- debug:
-    msg: "token is {{ token }}"
+- name: Pull the health checker image
+  docker_image:
+    name: binw/health_checker
+    source: pull
+    force_source: true
+
+- name: Write health checker config
+  copy:
+    content: "{{ groups['worker'] | join('\n') }}"
+    dest: "{{ home }}/config/servers.txt"
+    mode: "0644"
+    directory_mode: "0755"
+
+- name: Run health checker container
+  docker_container:
+    name: health_checker
+    image: binw/health_checker
+    container_default_behavior: compatibility
+    detach: true
+    published_ports:
+      - 5000:5000
+    volumes:
+      - "{{ home }}/config:/config:ro"
+  register: result
+
+- set_fact:
+    health_checker_container: "{{ result.ansible_facts.docker_container }}"
+
+- name: Pull the haproxy image
+  docker_image:
+    name: haproxy
+    source: pull
+    tag: 2.3.7
+
+- name: Ensure the haproxy config directory exists
+  file:
+    path: "{{ home }}/haproxy"
+    state: directory
+    mode: "0755"
+
+- name: Write haproxy config from template
+  template:
+    src: haproxy.cfg.j2
+    dest: "{{ home }}/haproxy/haproxy.cfg"
+    mode: "0644"
+
+- name: Run haproxy container
+  docker_container:
+    name: haproxy
+    image: haproxy:2.3.7
+    container_default_behavior: compatibility
+    detach: true
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    volumes:
+      - "{{ home }}/haproxy:/usr/local/etc/haproxy:ro"
+    published_ports:
+      - 80:80

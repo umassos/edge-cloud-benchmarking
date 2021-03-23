@@ -6,7 +6,7 @@ ${master-public-ip}
 ${addr}
 %{ endfor ~}
 
-[k3s:children]
+[cluster:children]
 master
 worker
 
