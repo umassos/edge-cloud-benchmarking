@@ -44,6 +44,14 @@ resource "aws_security_group" "edge-modeling-security-group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # allow http
+  ingress {
+    protocol = "tcp"
+    from_port = 80
+    to_port = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # allow all intra-vpc traffic
   ingress {
     protocol = "-1"
@@ -183,14 +191,18 @@ resource "local_file" "ansible-hosts" {
   file_permission = "0644"
 }
 
-output "load-balancer-id" {
+output "master-id" {
   value = aws_instance.master.id
 }
 
-output "load-balancer-ip" {
+output "master-ip" {
   value = aws_instance.master.public_ip
 }
 
-output "workers-id" {
+output "worker-ids" {
   value = aws_instance.workers.*.id
+}
+
+output "worker-private_ips" {
+  value = aws_instance.workers.*.private_ip
 }
