@@ -174,7 +174,7 @@ resource "aws_instance" "workers" {
   ami = data.aws_ami.ubuntu.id
   instance_type = "t2.small"
   # ToDo: change the instance type
-  count = 2
+  count = 3
 
   key_name = aws_key_pair.edge-modeling-key-pair.id
   subnet_id = aws_subnet.private-subnet.id

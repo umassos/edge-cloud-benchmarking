@@ -5,6 +5,10 @@
     name: binw/simple-keras-rest-api
     source: pull
     force_source: true
+  register: pull_result
+  retries: 10
+  delay: 5
+  until: pull_result is succeeded
 
 - name: Run rest api container
   docker_container:
