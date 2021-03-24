@@ -22,6 +22,9 @@
     append: true
   become: true
 
+- name: Reset ssh connection
+  meta: reset_connection
+
 - name: Install pip
   package:
     name: python3-pip
