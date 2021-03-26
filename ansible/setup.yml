@@ -1,6 +1,6 @@
 ---
 
-- hosts: cluster
+- hosts: all
   roles:
     - role: install_docker
 
@@ -11,3 +11,7 @@
 - hosts: master
   roles:
     - role: master
+
+- hosts: load-generator
+  roles:
+    - role: generator

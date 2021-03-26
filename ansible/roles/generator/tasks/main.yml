@@ -1,0 +1,21 @@
+---
+
+- name: Get home directory
+  set_fact:
+    home: /home/ubuntu
+
+- name: Pull the load generator image
+  docker_image:
+    name: binw/load_generator
+    source: pull
+    force_source: true
+  register: pull_result
+  retries: 10
+  delay: 5
+  until: pull_result is succeeded
+
+- name: Create output folder
+  file:
+    path: "{{ home }}/output"
+    state: directory
+    mode: "0755"
