@@ -70,6 +70,8 @@
     image: haproxy:2.3.7
     container_default_behavior: compatibility
     detach: true
+    ulimits:
+      - nofile:65535:65535
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0
     volumes:

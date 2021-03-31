@@ -9,10 +9,9 @@ ${addr}
 [load-generator]
 ${load-generator-public-ip}
 
-[all:children]
+[cluster:children]
 master
 worker
-load-generator
 
 [worker:vars]
 ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p ubuntu@${master-public-ip}"'

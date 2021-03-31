@@ -1,17 +1,19 @@
 ---
 
-- hosts: all
+- hosts: cluster
   roles:
-   - role: install_docker
+    - role: install_docker
 
 - hosts: worker
   roles:
-   - role: run_rest_api
+    - role: run_rest_api
 
 - hosts: master
   roles:
-   - role: master
+    - role: tuning
+    - role: master
 
 - hosts: load-generator
   roles:
+    - role: tuning
     - role: generator

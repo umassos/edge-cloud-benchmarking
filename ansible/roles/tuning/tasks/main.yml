@@ -1,0 +1,41 @@
+---
+
+# reference: https://gatling.io/docs/current/general/operations/
+- name: set soft nofile limit
+  pam_limits:
+    domain: "*"
+    limit_type: soft
+    limit_item: nofile
+    value: "65535"
+  become: true
+
+- name: set hard nofile limit
+  pam_limits:
+    domain: "*"
+    limit_type: hard
+    limit_item: nofile
+    value: "65535"
+  become: true
+
+- name: Enable PAM user limits
+  pamd:
+    name: "{{ item }}"
+    type: session
+    control: required
+    module_path: pam_limits.so
+  loop:
+    - common-session
+    - common-session-noninteractive
+    - sshd
+  become: true
+
+- name: Allow more ports
+  sysctl:
+    name: net.ipv4.ip_local_port_range
+    value: "1024 65535"
+    sysctl_set: true
+    reload: true
+  become: true
+
+- name: Reset connection
+  meta: reset_connection
