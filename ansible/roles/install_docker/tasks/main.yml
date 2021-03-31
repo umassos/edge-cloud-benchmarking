@@ -2,7 +2,7 @@
 
 - name: Get home directory
   set_fact:
-    home: /home/ubuntu
+    home: "{{ ansible_env.HOME }}"
 
 - name: Download docker install script
   get_url:

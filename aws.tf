@@ -1,10 +1,10 @@
 provider "aws" {
-  region = "us-west-1"
+  region = "ca-central-1"
 }
 
 variable "availability_zone" {
   type = string
-  default = "us-west-1a"
+  default = "ca-central-1a"
 }
 
 provider "aws" {
@@ -221,8 +221,12 @@ resource "aws_instance" "load_generator" {
   provider = aws.load_generator
 
   key_name = aws_key_pair.load-generator-key-pair.id
-  subnet_id = "subnet-1a5d4b62"
+  subnet_id = "subnet-1a5d4b62" # default subnet for us-east-2b
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = 20
+  }
 }
 
 resource "local_file" "ansible-hosts" {

@@ -1,0 +1,5 @@
+---
+
+- hosts: load-generator
+  roles:
+    - role: run_experiment

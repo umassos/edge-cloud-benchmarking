@@ -2,20 +2,78 @@
 
 - name: Get home directory
   set_fact:
-    home: /home/ubuntu
+    home: "{{ ansible_env.HOME }}"
 
-- name: Pull the load generator image
-  docker_image:
-    name: binw/load_generator
-    source: pull
-    force_source: true
-  register: pull_result
-  retries: 10
-  delay: 5
-  until: pull_result is succeeded
+# Install openjdk from the AdoptOpenJDK repository
+# https://adoptopenjdk.net/installation.html#linux-pkg
+- name: Make sure necessary packages are present for installing openjdk
+  apt:
+    name:
+      - apt-transport-https
+      - gnupg
+      - wget
+  become: true
 
-- name: Create output folder
-  file:
-    path: "{{ home }}/output"
-    state: directory
-    mode: "0755"
+- name: Import the AdoptOpenJDK GPG key
+  apt_key:
+    url: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+    state: present
+  become: true
+
+- name: Add AdoptOpenJDK's apt repository
+  apt_repository:
+    repo: deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb focal main
+    state: present
+  become: true
+
+- name: Install OpenJDK 11 (with HotSpot) and maven
+  apt:
+    name:
+      - adoptopenjdk-11-hotspot
+      - maven
+    update_cache: true
+  become: true
+
+
+- name: Clone the load generator
+  git:
+    repo: "https://github.com/wkk/simple-keras-rest-api"
+    dest: "{{ home }}/simple-keras-rest-api"
+    version: v1.0.0
+
+- name: Install python boto3 module
+  pip:
+    name: boto3
+    executable: pip3
+
+- name: Set AWS KEY ID
+  set_fact:
+    AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+
+- name: Set AWS SECRET
+  set_fact:
+    AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+
+- name: Download test images from S3
+  aws_s3:
+    aws_access_key: "{{ AWS_ACCESS_KEY_ID }}"
+    aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY }}"
+    bucket: edge-modeling
+    region: us-east-1
+    object: /images.zip
+    dest: "{{ home }}/images.zip"
+    mode: get
+    overwrite: different
+  register: s3_get_result
+
+- name: Install unzip
+  apt:
+    name: unzip
+  become: true
+
+- name: Extract images
+  unarchive:
+    src: "{{ home }}/images.zip"
+    dest: "{{ home }}/simple-keras-rest-api/load-generator/src/test/resources"
+    remote_src: true
+  when: s3_get_result.changed

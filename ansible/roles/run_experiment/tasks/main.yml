@@ -1,0 +1,31 @@
+---
+
+- set_fact:
+    home: "{{ ansible_env.HOME }}"
+
+- name: Makesure output folder exists
+  file:
+    path: "{{ home }}/output"
+    state: directory
+
+- name: Set number of requests
+  set_fact:
+    number_of_requests: 20
+
+- name: Run experiment
+  shell:
+    cmd: "mvn gatling:test -Dserver_address={{ groups['master'][0] }} -Dnumber_of_requests={{ number_of_requests }} -Drequest_rate={{ item }} -Dgatling.resultsFolder={{ home }}/output/{{ ansible_date_time.iso8601 }}-{{ number_of_requests }}-{{ item }}"
+    chdir: "{{ home }}/simple-keras-rest-api/load-generator"
+  async: 1800
+  poll: 20
+  with_sequence: start=4 end=5 stride=1
+
+- name: Create archive of results
+  archive:
+    path: "{{ home }}/output"
+    dest: "{{ home }}/output.tar.gz"
+
+- name: Fetch results
+  fetch:
+    src: "{{ home }}/output.ta.gz"
+    dest: "output/{{ ansible_date_time.iso8601 }}-{{ groups['worker'] | length }}-workers"
