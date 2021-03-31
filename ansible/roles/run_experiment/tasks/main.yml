@@ -27,5 +27,6 @@
 
 - name: Fetch results
   fetch:
-    src: "{{ home }}/output.ta.gz"
-    dest: "output/{{ ansible_date_time.iso8601 }}-{{ groups['worker'] | length }}-workers"
+    src: "{{ home }}/output.tar.gz"
+    dest: "output/{{ ansible_date_time.iso8601 }}-{{ groups['worker'] | length }}-workers/"
+    flat: true
