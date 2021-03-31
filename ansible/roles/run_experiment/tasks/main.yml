@@ -10,15 +10,15 @@
 
 - name: Set number of requests
   set_fact:
-    number_of_requests: 20
+    number_of_requests: "{{ (groups['worker'] | length) * 2000 }}"
 
 - name: Run experiment
   shell:
-    cmd: "mvn gatling:test -Dserver_address={{ groups['master'][0] }} -Dnumber_of_requests={{ number_of_requests }} -Drequest_rate={{ item }} -Dgatling.resultsFolder={{ home }}/output/{{ ansible_date_time.iso8601 }}-{{ number_of_requests }}-{{ item }}"
+    cmd: "mvn gatling:test -Dserver_address={{ groups['master'][0] }} -Dnumber_of_requests={{ number_of_requests }} -Drequest_rate={{ (groups['worker'] | length) * (item | int) }} -Dgatling.resultsFolder={{ home }}/output/{{ ansible_date_time.iso8601 }}-{{ number_of_requests }}-{{ item }}"
     chdir: "{{ home }}/simple-keras-rest-api/load-generator"
   async: 1800
   poll: 20
-  with_sequence: start=4 end=5 stride=1
+  with_sequence: start=6 end=12
 
 - name: Create archive of results
   archive:
