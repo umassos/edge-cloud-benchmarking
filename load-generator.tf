@@ -118,8 +118,9 @@ resource "aws_instance" "load_generator" {
   instance_type = "c5n.2xlarge"
 
   key_name = aws_key_pair.load-generator-key-pair.id
-  subnet_id = "subnet-1a5d4b62" # default subnet for us-east-2b
+  subnet_id = aws_subnet.load-generator-subnet.id
   associate_public_ip_address = true
+  security_groups = [aws_security_group.load-generator-sg.id ]
 
   root_block_device {
     volume_size = 20

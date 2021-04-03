@@ -1,11 +1,11 @@
 provider "aws" {
   alias = "cluster"
-  region = "us-east-2"
+  region = "ca-central-1"
 }
 
 variable "cluster-az" {
   type = string
-  default = "us-east-2a"
+  default = "ca-central-1a"
 }
 
 variable "worker-count" {
@@ -61,11 +61,11 @@ resource "aws_security_group" "cluster-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # allow netperf
+  # allow ping
   ingress {
-    protocol = "tcp"
-    from_port = 12865
-    to_port = 12865
+    protocol = "icmp"
+    from_port = 8
+    to_port = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
 
