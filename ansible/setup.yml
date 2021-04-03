@@ -5,6 +5,7 @@
     - role: install_docker
 
 - hosts: worker
+  strategy: free
   roles:
     - role: run_rest_api
 
