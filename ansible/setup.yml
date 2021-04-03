@@ -13,7 +13,7 @@
     - role: tuning
     - role: master
 
-- hosts: load-generator
+- hosts: load_generator
   roles:
     - role: tuning
     - role: generator

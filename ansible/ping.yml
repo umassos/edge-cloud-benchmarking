@@ -1,0 +1,24 @@
+---
+
+- hosts: load_generator
+  tasks:
+    - name: Run ping
+      shell:
+        cmd: "ping -A -c 120 -H {{ groups['master'][0] }}"
+      register: ping_result
+
+    - debug:
+        msg: "{{ ping_result }}"
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Get timestamp
+      set_fact:
+        timestamp: "{{ ansible_date_time.iso8601 }}"
+
+    - name: Save ping results
+      copy:
+        content: "{{ hostvars[item]['ping_result'].stdout }}"
+        dest: "output/{{ timestamp }}-netperf.out"
+      loop: "{{ groups['load_generator'] }}"

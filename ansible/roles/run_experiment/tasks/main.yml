@@ -8,6 +8,23 @@
     path: "{{ home }}/output"
     state: directory
 
+- name: Run health check
+  uri:
+    url: "http://{{ groups['master'][0] }}/check"
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: health_check_result
+
+- debug:
+    msg: "{{ health_check_result }}"
+
+- name: Verify cluster health
+  assert:
+    that:
+      - health_check_result.json.healthy
+
 - name: Set number of requests
   set_fact:
     number_of_requests: "{{ (groups['worker'] | length) * 2000 }}"
@@ -28,5 +45,16 @@
 - name: Fetch results
   fetch:
     src: "{{ home }}/output.tar.gz"
-    dest: "output/{{ ansible_date_time.iso8601 }}-{{ groups['worker'] | length }}-workers/"
+    dest: "output/{{ ts }}-{{ groups['worker'] | length }}-workers/"
+    flat: true
+
+- name: Create archive of service time logs
+  archive:
+    path: "{{ home }}/simple-keras-rest-api/load-generator/output"
+    dest: "{{ home }}/service_times.tar.gz"
+
+- name: Fetch results
+  fetch:
+    src: "{{ home }}/service_times.tar.gz"
+    dest: "output/{{ ts }}-{{ groups['worker'] | length }}-workers/"
     flat: true

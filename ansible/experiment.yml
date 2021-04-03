@@ -1,5 +1,44 @@
 ---
 
-- hosts: load-generator
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Get timestamp
+      set_fact:
+        timestamp: "{{ ansible_date_time.iso8601 }}"
+
+- hosts: worker
+  tasks:
+    - name: Install sysstat
+      package:
+        name: sysstat
+        state: present
+      become: true
+
+    - name: Kill existing mpstat processes
+      shell:
+        cmd: pkill mpstat
+      failed_when: false
+
+    - name: Start cpu utilization collection
+      shell:
+        cmd: "nohup mpstat -n 1 > /tmp/cpu.txt &"
+      async: 0
+      poll: 0
+
+- hosts: load_generator
   roles:
     - role: run_experiment
+      vars:
+        ts: "{{ hostvars['localhost']['timestamp'] }}"
+
+- hosts: worker
+  tasks:
+    - name: Stop cpu utilization collection
+      shell:
+        cmd: pkill mpstat
+
+    - name: Fetch results
+      fetch:
+        src: "/tmp/cpu.txt"
+        dest: "output/{{ hostvars['localhost']['timestamp'] }}-{{ groups['worker'] | length }}-workers/"

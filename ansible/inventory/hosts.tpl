@@ -6,7 +6,7 @@ ${master-public-ip}
 ${addr}
 %{ endfor ~}
 
-[load-generator]
+[load_generator]
 ${load-generator-public-ip}
 
 [cluster:children]

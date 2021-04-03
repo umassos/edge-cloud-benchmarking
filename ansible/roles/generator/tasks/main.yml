@@ -39,7 +39,7 @@
   git:
     repo: "https://github.com/wkk/simple-keras-rest-api"
     dest: "{{ home }}/simple-keras-rest-api"
-    version: v1.0.0
+    version: v1.1.0
 
 - name: Install pip
   package:
