@@ -20,5 +20,5 @@
     - name: Save ping results
       copy:
         content: "{{ hostvars[item]['ping_result'].stdout }}"
-        dest: "output/{{ timestamp }}-netperf.out"
+        dest: "output/{{ timestamp }}-ping.out"
       loop: "{{ groups['load_generator'] }}"
