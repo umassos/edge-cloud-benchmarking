@@ -4,7 +4,7 @@
   tasks:
     - name: Run ping
       shell:
-        cmd: "ping -A -c 120 -H {{ groups['master'][0] }}"
+        cmd: "ping -A -c 120 {{ groups['master'][0] }}"
       register: ping_result
 
     - debug:
