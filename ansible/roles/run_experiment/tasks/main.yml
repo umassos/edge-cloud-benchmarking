@@ -3,7 +3,7 @@
 - set_fact:
     home: "{{ ansible_env.HOME }}"
 
-- name: Makesure output folder exists
+- name: Make sure output folder exists
   file:
     path: "{{ home }}/output"
     state: directory
@@ -31,7 +31,7 @@
 
 - name: Run experiment
   shell:
-    cmd: "mvn gatling:test -Dserver_address={{ groups['master'][0] }} -Dnumber_of_requests={{ number_of_requests }} -Drequest_rate={{ (groups['worker'] | length) * (item | int) }} -Dgatling.resultsFolder={{ home }}/output/{{ ansible_date_time.iso8601 }}-{{ number_of_requests }}-{{ item }}"
+    cmd: "mvn gatling:test -Dserver_address={{ groups['master'][0] }} -Dnumber_of_requests={{ number_of_requests }} -Drequest_rate={{ (groups['worker'] | length) * (item | int) }} -Dgatling.resultsFolder={{ home }}/output/{{ ts }}-{{ number_of_requests }}-{{ item }}"
     chdir: "{{ home }}/simple-keras-rest-api/load-generator"
   async: 1800
   poll: 20
