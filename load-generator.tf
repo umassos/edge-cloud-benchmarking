@@ -1,11 +1,16 @@
-provider "aws" {
-  alias = "load-generator"
-  region = "us-east-2"
+variable "load-generator-region" {
+  type = string
+  default = "us-east-2"
 }
 
-variable "load-generator-az" {
+variable "load-generator-availability-zone" {
   type = string
-  default = "us-east-2b"
+  default = "a"
+}
+
+provider "aws" {
+  alias = "load-generator"
+  region = var.load-generator-region
 }
 
 data "aws_ami" "load-generator-ami" {
@@ -65,7 +70,7 @@ resource "aws_subnet" "load-generator-subnet" {
   provider = aws.load-generator
   vpc_id = aws_vpc.load-generator-vpc.id
   cidr_block = "10.0.1.0/24"
-  availability_zone = var.load-generator-az
+  availability_zone = "${var.load-generator-region}${var.load-generator-availability-zone}"
 
   tags = {
     name = "edge-modeling"
@@ -112,7 +117,7 @@ resource "aws_key_pair" "load-generator-key-pair" {
   }
 }
 
-resource "aws_instance" "load_generator" {
+resource "aws_instance" "load-generator" {
   provider = aws.load-generator
   ami = data.aws_ami.load-generator-ami.id
   instance_type = "c5n.2xlarge"
@@ -120,7 +125,7 @@ resource "aws_instance" "load_generator" {
   key_name = aws_key_pair.load-generator-key-pair.id
   subnet_id = aws_subnet.load-generator-subnet.id
   associate_public_ip_address = true
-  security_groups = [aws_security_group.load-generator-sg.id ]
+  vpc_security_group_ids = [aws_security_group.load-generator-sg.id ]
 
   root_block_device {
     volume_size = 20

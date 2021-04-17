@@ -1,16 +1,21 @@
-provider "aws" {
-  alias = "cluster"
-  region = "ca-central-1"
+variable "cluster-region" {
+  type = string
+  default = "ca-central-1"
 }
 
-variable "cluster-az" {
+variable "cluster-availability-zone" {
   type = string
-  default = "ca-central-1a"
+  default = "a"
 }
 
 variable "worker-count" {
   type = number
   default = 5
+}
+
+provider "aws" {
+  alias = "cluster"
+  region = var.cluster-region
 }
 
 data "aws_ami" "cluster-ami" {
@@ -94,7 +99,7 @@ resource "aws_subnet" "cluster-public-subnet" {
   provider = aws.cluster
   vpc_id = aws_vpc.cluster-vpc.id
   cidr_block = "172.16.10.0/24"
-  availability_zone = var.cluster-az
+  availability_zone = "${var.cluster-region}${var.cluster-availability-zone}"
 
   tags = {
     name = "edge-modeling"
@@ -143,7 +148,7 @@ resource "aws_subnet" "cluster-private-subnet" {
   provider = aws.cluster
   vpc_id = aws_vpc.cluster-vpc.id
   cidr_block = "172.16.20.0/24"
-  availability_zone = var.cluster-az
+  availability_zone = "${var.cluster-region}${var.cluster-availability-zone}"
 
   tags = {
     name = "edge-modeling"
