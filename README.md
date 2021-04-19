@@ -30,7 +30,7 @@
 
 ## Usage
 You can refer to and modify [run.sh](run.sh) to get started quickly. You can also manually run the
-benchmarks following the following steps:
+benchmarks following the following steps below:
 
 1.  Provision the resources using `terraform apply`:
 
@@ -38,7 +38,7 @@ benchmarks following the following steps:
     terraform apply -var load-generator-region=us-east-2 \
                     -var cluster-region=us-east-2 \
                     -var cluster-availability-zone=c
-                    -var worker-count=1 -auto-approve
+                    -var worker-count=1
     ```
 
     You can use the variables to specify the region/availability zone of both the load generator and
@@ -57,7 +57,7 @@ benchmarks following the following steps:
     terraform destroy -var load-generator-region=us-east-2 \
                 -var cluster-region=us-east-2 \
                 -var cluster-availability-zone=c
-                -var worker-count=1 -auto-approve
+                -var worker-count=1
     ```
 
     __[Important!]__ The variables in your `terraform destroy` command need to be the same as whet you
