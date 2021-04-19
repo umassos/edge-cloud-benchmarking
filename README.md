@@ -1,0 +1,66 @@
+# Performance Benchmarking Framework for Edge/Cloud Environments
+
+## Prerequisites
+
+1. [Terraform](https://www.terraform.io/)
+
+2. [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+3.  Provide AWS credentials If you use plan to run the benchmarks on AWS you need to provide your
+    AWS credentials so that Terraform can provision the needed resources on your behalf. The easiest
+    way is to provide your credentials via the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+    environment variables:
+
+    ```shell
+    export AWS_ACCESS_KEY_ID="your_access_key"
+    export AWS_SECRET_ACCESS_KEY="your_secret_key"
+    ```
+
+    For more information, refer to the [Terraform AWS Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication)
+
+4.  Generate a key pair, This key pair's public key will be registered with AWS to allow logging-in
+    to EC2 instances.
+
+    ```shell
+    ssh-keygen -t rsa -m PEM
+    ```
+
+    After the key pair is created, copy the public key to the root folder of this project and rename
+    it `edge-modeling.pub`.
+
+## Usage
+You can refer to and modify [run.sh](run.sh) to get started quickly. You can also manually run the
+benchmarks following the following steps:
+
+1.  Provision the resources using `terraform apply`:
+
+    ```shell
+    terraform apply -var load-generator-region=us-east-2 \
+                    -var cluster-region=us-east-2 \
+                    -var cluster-availability-zone=c
+                    -var worker-count=1 -auto-approve
+    ```
+
+    You can use the variables to specify the region/availability zone of both the load generator and
+    the cluster. You can also adjust the number of worker nodes in the cluster using the
+    `worker_count` variable.
+
+2.  Run the benchmarks.
+
+    ```
+    (cd ansible && ansible-playbook ping.yml && ansible-playbook setup.yml && ansible-playbook experiment.yml)
+    ```
+
+3.  Tear down the resources.
+
+    ```
+    terraform destroy -var load-generator-region=us-east-2 \
+                -var cluster-region=us-east-2 \
+                -var cluster-availability-zone=c
+                -var worker-count=1 -auto-approve
+    ```
+
+    __[Important!]__ The variables in your `terraform destroy` command need to be the same as whet you
+    used in the `terraform apply` command. Otherwise your provision may end up in an invalid state
+    (e.g., Terraform thinks your instances has been destroyed, while they are actually still running
+    in another region) and you may end up with surprise charges from AWS.
