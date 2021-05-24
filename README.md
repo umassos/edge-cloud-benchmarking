@@ -28,6 +28,12 @@
     After the key pair is created, copy the public key to the root folder of this project and rename
     it `edge-modeling.pub`.
 
+5.  Start the ssh-agent in the background and add your generated private key. This is required for
+    terraform to set up the EC2 servers over ssh.
+    ```shell
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/edge-modeling.pem
+    ```
 ## Usage
 You can refer to and modify [run.sh](run.sh) to get started quickly. You can also manually run the
 benchmarks following the following steps below:
