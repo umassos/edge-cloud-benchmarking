@@ -13,6 +13,11 @@ variable "worker-count" {
   default = 5
 }
 
+variable "worker-instance-type" {
+  type = string
+  default = "c5a.xlarge"
+}
+
 provider "aws" {
   alias = "cluster"
   region = var.cluster-region
@@ -210,7 +215,7 @@ resource "aws_instance" "master" {
 resource "aws_instance" "workers" {
   provider = aws.cluster
   ami = data.aws_ami.cluster-ami.id
-  instance_type = "c5a.xlarge"
+  instance_type = var.worker-instance-type
   count = var.worker-count
 
   key_name = aws_key_pair.cluster-key-pair.id
