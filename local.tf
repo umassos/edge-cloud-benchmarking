@@ -1,7 +1,8 @@
 resource "local_file" "ansible-hosts" {
   content = templatefile("ansible/inventory/hosts.tpl",{
     master-public-ip = aws_instance.master.public_ip,
-    worker-private-ip = aws_instance.workers.*.private_ip,
+    cpu-worker-private-ip = aws_instance.cpu-workers.*.private_ip,
+    gpu-worker-private-ip = aws_instance.gpu-workers.*.private_ip,
     load-generator-public-ip = aws_instance.load-generator.public_ip
   })
   filename = "ansible/inventory/hosts.ini"
@@ -16,12 +17,20 @@ output "master-ip" {
   value = aws_instance.master.public_ip
 }
 
-output "worker-ids" {
-  value = aws_instance.workers.*.id
+output "cpu-worker-ids" {
+  value = aws_instance.cpu-workers.*.id
 }
 
-output "worker-private-ips" {
-  value = aws_instance.workers.*.private_ip
+output "cpu-worker-private-ips" {
+  value = aws_instance.cpu-workers.*.private_ip
+}
+
+output "gpu-worker-ids" {
+  value = aws_instance.gpu-workers.*.id
+}
+
+output "gpu-worker-private-ips" {
+  value = aws_instance.gpu-workers.*.private_ip
 }
 
 output "load-generator-id" {

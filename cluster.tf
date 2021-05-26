@@ -8,14 +8,24 @@ variable "cluster-availability-zone" {
   default = "a"
 }
 
-variable "worker-count" {
+variable "cpu-worker-count" {
   type = number
   default = 5
 }
 
-variable "worker-instance-type" {
+variable "cpu-worker-instance-type" {
   type = string
   default = "c5a.xlarge"
+}
+
+variable "gpu-worker-count" {
+  type = number
+  default = 0
+}
+
+variable "gpu-worker-instance-type" {
+  type = string
+  default = "g4dn.xlarge"
 }
 
 provider "aws" {
@@ -212,11 +222,22 @@ resource "aws_instance" "master" {
   vpc_security_group_ids = [aws_security_group.cluster-sg.id]
 }
 
-resource "aws_instance" "workers" {
+resource "aws_instance" "cpu-workers" {
   provider = aws.cluster
   ami = data.aws_ami.cluster-ami.id
-  instance_type = var.worker-instance-type
-  count = var.worker-count
+  instance_type = var.cpu-worker-instance-type
+  count = var.cpu-worker-count
+
+  key_name = aws_key_pair.cluster-key-pair.id
+  subnet_id = aws_subnet.cluster-private-subnet.id
+  vpc_security_group_ids = [aws_security_group.cluster-sg.id]
+}
+
+resource "aws_instance" "gpu-workers" {
+  provider = aws.cluster
+  ami = data.aws_ami.cluster-ami.id
+  instance_type = var.gpu-worker-instance-type
+  count = var.gpu-worker-count
 
   key_name = aws_key_pair.cluster-key-pair.id
   subnet_id = aws_subnet.cluster-private-subnet.id
