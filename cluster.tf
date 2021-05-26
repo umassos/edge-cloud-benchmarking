@@ -242,4 +242,8 @@ resource "aws_instance" "gpu-workers" {
   key_name = aws_key_pair.cluster-key-pair.id
   subnet_id = aws_subnet.cluster-private-subnet.id
   vpc_security_group_ids = [aws_security_group.cluster-sg.id]
+
+  root_block_device {
+    volume_size = 20
+  }
 }
