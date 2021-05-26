@@ -1,0 +1,52 @@
+---
+
+- name: Add nvidia key
+  apt_key:
+    url: https://nvidia.github.io/nvidia-docker/gpgkey
+    state: present
+  become: true
+
+- name: Add nvidia repo
+  get_url:
+    url: https://nvidia.github.io/nvidia-docker/ubuntu20.04/nvidia-docker.list
+    dest: /etc/apt/sources.list.d/
+  become: true
+
+- name: Install nvidia driver and container toolkit
+  apt:
+    name:
+      - nvidia-driver-460
+      - nvidia-docker2
+    update_cache: true
+  become: true
+
+- name: Restart docker service
+  systemd:
+    name: docker
+    state: restarted
+  become: true
+
+- name: Pull image from docker hub
+  docker_image:
+    name: binw/simple-keras-rest-api-cuda
+    source: pull
+    force_source: true
+  register: pull_result
+  retries: 10
+  delay: 5
+  until: pull_result is succeeded
+
+- name: Run rest api container
+  docker_container:
+    name: simple-keras-rest-api-cuda
+    image: binw/simple-keras-rest-api-cuda
+    container_default_behavior: compatibility
+    detach: true
+    device_requests:
+      - driver: nvidia
+        count: -1
+        capabilities:
+          - compute
+          - utility
+    published_ports:
+      - 80:5000

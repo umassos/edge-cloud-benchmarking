@@ -27,8 +27,11 @@ backend health-checker
 
 backend workers
     balance leastconn
-{% for worker_addr in groups['worker'] %}
-    server worker{{ loop.index }} {{ worker_addr }}:80
+{% for worker_addr in groups['cpu_worker'] %}
+    server cpu_worker{{ loop.index }} {{ worker_addr }}:80
+{% endfor %}
+{% for worker_addr in groups['gpu_worker'] %}
+    server gpu_worker{{ loop.index }} {{ worker_addr }}:80
 {% endfor %}
 
 backend no-match

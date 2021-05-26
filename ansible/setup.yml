@@ -5,10 +5,15 @@
   roles:
     - role: install_docker
 
-- hosts: worker
+- hosts: cpu_worker
   strategy: free
   roles:
     - role: run_rest_api
+
+- hosts: gpu_worker
+  strategy: free
+  roles:
+    - role: run_rest_api_cuda
 
 - hosts: master
   roles:

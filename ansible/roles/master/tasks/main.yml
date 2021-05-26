@@ -22,7 +22,7 @@
 
 - name: Write health checker config
   copy:
-    content: "{{ groups['worker'] | join('\n') }}"
+    content: "{{ (groups['cpu_worker'] + groups['gpu_worker']) | join('\n') }}"
     dest: "{{ home }}/config/servers.txt"
     mode: "0644"
 
