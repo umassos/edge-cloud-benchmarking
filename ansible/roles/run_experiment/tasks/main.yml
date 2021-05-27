@@ -35,7 +35,7 @@
     chdir: "{{ home }}/simple-keras-rest-api/load-generator"
   async: 1800
   poll: 20
-  with_sequence: start=6 end=12
+  with_sequence: start=10 end=20
 
 - name: Create archive of results
   archive:
