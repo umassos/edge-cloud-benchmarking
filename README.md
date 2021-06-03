@@ -43,7 +43,7 @@ benchmarks following the following steps below:
     ```shell
     terraform apply -var load-generator-region=us-east-2 \
                     -var cluster-region=us-east-2 \
-                    -var cluster-availability-zone=c
+                    -var cluster-availability-zone=c \
                     -var worker-count=1
     ```
 
@@ -62,7 +62,7 @@ benchmarks following the following steps below:
     ```
     terraform destroy -var load-generator-region=us-east-2 \
                 -var cluster-region=us-east-2 \
-                -var cluster-availability-zone=c
+                -var cluster-availability-zone=c \
                 -var worker-count=1
     ```
 
