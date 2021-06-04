@@ -5,22 +5,26 @@ set -e
 terraform apply -var load-generator-region=us-east-2 \
                 -var cluster-region=us-east-2 \
                 -var cluster-availability-zone=c \
-                -var worker-count=1 -auto-approve
+                -var cpu-worker-count=1 \
+                -var gpu-worker-count=1 -auto-approve
 
 (cd ansible && ansible-playbook ping.yml && ansible-playbook setup.yml && ansible-playbook experiment.yml)
 
 terraform destroy -var load-generator-region=us-east-2 \
                 -var cluster-region=us-east-2 \
                 -var cluster-availability-zone=c \
-                -var worker-count=1 -auto-approve
+                -var cpu-worker-count=1 \
+                -var gpu-worker-count=1 -auto-approve
 
 # us-east-2a to ca-central-1a, 10 servers
 terraform apply -var load-generator-region=us-east-2 \
                 -var cluster-region=ca-central-1 \
-                -var worker-count=10 -auto-approve
+                -var cpu-worker-count=5 \
+                -var gpu-worker-count=5 -auto-approve
 
 (cd ansible && ansible-playbook ping.yml && ansible-playbook setup.yml && ansible-playbook experiment.yml)
 
 terraform destroy -var load-generator-region=us-east-2 \
                 -var cluster-region=ca-central-1 \
-                -var worker-count=10 -auto-approve
+                -var cpu-worker-count=5 \
+                -var gpu-worker-count=5 -auto-approve

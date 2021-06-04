@@ -1,5 +1,8 @@
 # Performance Benchmarking Framework for Edge/Cloud Environments
 
+This branch contains the scripts used to run the experiments with a heterogeneous cluster, i.e.,
+some of the VMs in the cluster are CPU instances while the others are GPU instances.
+
 ## Prerequisites
 
 1. [Terraform](https://www.terraform.io/)
@@ -38,13 +41,22 @@
 You can refer to and modify [run.sh](run.sh) to get started quickly. You can also manually run the
 benchmarks following the following steps below:
 
-1.  Provision the resources using `terraform apply`:
+1.  Provision the resources using `terraform apply`. You can specify the number and instance type of
+    CPU instances as well as GPU instances using the following variables:
+    * `cpu-worker-count`: controls how many CPU instances are in the cluster.
+    * `cpu-worker-instance-type`: controls which instance type is used for CPU instances (default is
+      `c5a.xlarge`).
+    * `gpu-worker-count`: controls how many GPU instances are in the cluster.
+    * `gpu-worker-instance-type`: controls which instance type is used for GPU instances (default is
+      `g4dn.xlarge`).
 
+    Example:
     ```shell
     terraform apply -var load-generator-region=us-east-2 \
                     -var cluster-region=us-east-2 \
-                    -var cluster-availability-zone=c
-                    -var worker-count=1
+                    -var cluster-availability-zone=c \
+                    -var cpu-worker-count=1 \
+                    -var gpu-worker-count=1
     ```
 
     You can use the variables to specify the region/availability zone of both the load generator and
@@ -62,11 +74,12 @@ benchmarks following the following steps below:
     ```
     terraform destroy -var load-generator-region=us-east-2 \
                 -var cluster-region=us-east-2 \
-                -var cluster-availability-zone=c
-                -var worker-count=1
+                -var cluster-availability-zone=c \
+                -var cpu-worker-count=1 \
+                -var gpu-worker-count=1
     ```
 
-    __[Important!]__ The variables in your `terraform destroy` command need to be the same as whet you
-    used in the `terraform apply` command. Otherwise your provision may end up in an invalid state
-    (e.g., Terraform thinks your instances has been destroyed, while they are actually still running
-    in another region) and you may end up with surprise charges from AWS.
+    __[Important!]__ The variables in your `terraform destroy` command need to be the same as what
+    you used in the `terraform apply` command. Otherwise your provision may end up in an invalid
+    state (e.g., Terraform thinks your instances has been terminated, while they are actually still
+    running in another region) and you may end up with surprise charges from AWS.
