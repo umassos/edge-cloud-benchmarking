@@ -20,7 +20,7 @@ variable "cpu-worker-instance-type" {
 
 variable "gpu-worker-count" {
   type = number
-  default = 0
+  default = 5
 }
 
 variable "gpu-worker-instance-type" {
