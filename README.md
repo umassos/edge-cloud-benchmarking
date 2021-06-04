@@ -66,7 +66,7 @@ benchmarks following the following steps below:
                 -var worker-count=1
     ```
 
-    __[Important!]__ The variables in your `terraform destroy` command need to be the same as whet you
-    used in the `terraform apply` command. Otherwise your provision may end up in an invalid state
-    (e.g., Terraform thinks your instances has been destroyed, while they are actually still running
-    in another region) and you may end up with surprise charges from AWS.
+    __[Important!]__ The variables in your `terraform destroy` command need to be the same as what
+    you used in the `terraform apply` command. Otherwise your provision may end up in an invalid
+    state (e.g., Terraform thinks your instances has been terminated, while they are actually still
+    running in another region) and you may end up with surprise charges from AWS.
