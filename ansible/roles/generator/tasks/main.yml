@@ -41,36 +41,11 @@
     dest: "{{ home }}/simple-keras-rest-api"
     version: v1.1.0
 
-- name: Install pip
-  package:
-    name: python3-pip
-    state: present
-  become: true
-
-- name: Install python boto3 module
-  pip:
-    name: boto3
-    executable: pip3
-
-- name: Set AWS KEY ID
-  set_fact:
-    AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
-
-- name: Set AWS SECRET
-  set_fact:
-    AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
-
-- name: Download test images from S3
-  aws_s3:
-    aws_access_key: "{{ AWS_ACCESS_KEY_ID }}"
-    aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY }}"
-    bucket: edge-modeling
-    region: us-east-1
-    object: /images.zip
+- name: Download test images from GitHub
+  get_url:
+    url: https://github.com/umassos/edge-cloud-benchmarking/releases/download/sc21/images.zip
     dest: "{{ home }}/images.zip"
-    mode: get
-    overwrite: different
-  register: s3_get_result
+  register: download_result
 
 - name: Install unzip
   apt:
@@ -82,4 +57,4 @@
     src: "{{ home }}/images.zip"
     dest: "{{ home }}/simple-keras-rest-api/load-generator/src/test/resources"
     remote_src: true
-  when: s3_get_result.changed
+  when: download_result.changed
